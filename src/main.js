@@ -12,17 +12,17 @@ const sprites = {
   crouch: new Image()
 };
 
-sprites.idle.src = "assets/Junimo_Idle.png";
-sprites.walk.src = "assets/Junimo_Walk.png";
-sprites.jump.src = "assets/Junimo_Jump.png";
-sprites.crouch.src = "assets/Junimo_Crouch.png";
+sprites.idle.src = "assets/sprites/Junimo_Idle.png";
+sprites.walk.src = "assets/sprites/Junimo_Walk.png";
+sprites.jump.src = "assets/sprites/Junimo_Jump.png";
+sprites.crouch.src = "assets/sprites/Junimo_Crouch.png";
 
 // Configuración de frames (ajusta según cada spritesheet)
 const frameData = {
-  idle:   { w: 20, h: 24, frames: 8, scale: 4 },
-  walk:   { w: 20, h: 24, frames: 4, scale: 4 },
-  jump:   { w: 20, h: 24, frames: 4, scale: 4 },
-  crouch: { w: 20, h: 24, frames: 3, scale: 4 }
+  idle:   { w: 20, h: 24, frames: 8, scale: 7 },
+  walk:   { w: 20, h: 24, frames: 4, scale: 7 },
+  jump:   { w: 20, h: 24, frames: 4, speed: 8, scale: 7 },
+  crouch: { w: 20, h: 24, frames: 3, speed: 8, scale: 7 }
 };
 
 let action = "idle";
@@ -56,9 +56,21 @@ document.addEventListener("keyup", () => {
 // Animación
 function update() {
   tickCount++;
+  const data = frameData[action];
+
   if (tickCount > ticksPerFrame) {
     tickCount = 0;
-    frameIndex = (frameIndex + 1) % frameData[action].frames;
+
+    if (action === "jump" || action === "crouch") {
+      // Avanza hasta el último frame y se queda ahí
+      if (frameIndex < data.frames - 1) {
+        frameIndex++;
+      }
+      // Si ya está en el último frame, no hace nada más
+    } else {
+      // Animaciones que sí ciclan (idle, walk, etc.)
+      frameIndex = (frameIndex + 1) % data.frames;
+    }
   }
 }
 
@@ -67,6 +79,7 @@ function draw() {
 
   const sprite = sprites[action];
   const data = frameData[action];
+  ctx.imageSmoothingEnabled = false;
 
   ctx.save();
 
