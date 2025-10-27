@@ -12,10 +12,10 @@ const sprites = {
   crouch: new Image()
 };
 
-sprites.idle.src = "assets/sprites/Junimo_Idle.png";
-sprites.walk.src = "assets/sprites/Junimo_Walk.png";
-sprites.jump.src = "assets/sprites/Junimo_Jump.png";
-sprites.crouch.src = "assets/sprites/Junimo_Crouch.png";
+sprites.idle.src = "../assets/sprites/Junimo_Idle.png";
+sprites.walk.src = "../assets/sprites/Junimo_Walk.png";
+sprites.jump.src = "../assets/sprites/Junimo_Jump.png";
+sprites.crouch.src = "../assets/sprites/Junimo_Crouch.png";
 
 // Configuración de frames (ajusta según cada spritesheet)
 const frameData = {
