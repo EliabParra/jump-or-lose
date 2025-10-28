@@ -3,9 +3,9 @@ const ctx = canvas ? canvas.getContext("2d") : null;
 
 // ------------------ Config / constants ------------------
 const ASSET_PATH = "../assets/sprites/"; // relative to src/
-const GRAVITY = .7;
-const TICKS_PER_FRAME = 4;
-const DEFAULT_SCALE = 4;
+const GRAVITY = 0.3; 
+const TICKS_PER_FRAME = 8;
+const DEFAULT_SCALE = 3;
 
 // Variable de direccion del sprite
 let facing = "right";
@@ -35,10 +35,10 @@ const frameData = {
 // offsetX/Y = distance from sprite top-left to hitbox top-left
 // width/height = hitbox size in sprite pixels
 const hitboxAdjustments = {
-  idle:   { offsetX: 6, offsetY: 7, width: 8, height: 12 },
-  walk:   { offsetX: 6, offsetY: 7, width: 8, height: 12 },
-  jump:   { offsetX: 6, offsetY: 6, width: 8, height: 13 },
-  crouch: { offsetX: 6, offsetY: 10, width: 8, height: 9 }
+  idle:   { offsetX: 4, offsetY: 4, width: 12, height: 16 },
+  walk:   { offsetX: 4, offsetY: 4, width: 12, height: 16 },
+  jump:   { offsetX: 4, offsetY: 4, width: 12, height: 16 },
+  crouch: { offsetX: 4, offsetY: 8, width: 12, height: 12 }
 };
 
 // Keep a copy of defaults so we can reset
@@ -61,8 +61,8 @@ const player = {
   y: 50,
   vx: 0,
   vy: 0,
-  speed: 7,
-  jumpPower: -15,
+  speed: 2,          
+  jumpPower: -10,     
   width: frameData.idle.w * frameData.idle.scale,
   height: frameData.idle.h * frameData.idle.scale,
   onGround: false
@@ -105,8 +105,8 @@ const tiles = [
   { x: 0, y: CANVAS_H - 40, width: CANVAS_W, height: 40 },
   { x: 0, y: 0, width: 20, height: CANVAS_H },
   { x: CANVAS_W - 20, y: 0, width: 20, height: CANVAS_H },
-  { x: 200, y: 250, width: 100, height: 20 },
-  { x: 400, y: 150, width: 100, height: 20 }
+  { x: 200, y: 200, width: 100, height: 20 },
+  { x: 400, y: 130, width: 100, height: 20 }
 ];
 
 // Helpers
