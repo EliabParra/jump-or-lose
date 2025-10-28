@@ -102,11 +102,15 @@ document.addEventListener("keyup", (e) => { keys[e.code] = false; });
 const CANVAS_W = canvas ? canvas.width : 640;
 const CANVAS_H = canvas ? canvas.height : 360;
 const tiles = [
-  { x: 0, y: CANVAS_H - 40, width: CANVAS_W, height: 40 },
+  { x: 0, y: 0, width: CANVAS_W, height: 20 },
+  { x: 0, y: CANVAS_H - 20, width: CANVAS_W, height: 40 },
   { x: 0, y: 0, width: 20, height: CANVAS_H },
   { x: CANVAS_W - 20, y: 0, width: 20, height: CANVAS_H },
-  { x: 200, y: 200, width: 100, height: 20 },
-  { x: 400, y: 130, width: 100, height: 20 }
+  { x: 350, y: 400, width: 100, height: 20 },
+  { x: 450, y: 300, width: 100, height: 20 },
+  { x: 300, y: 200, width: 100, height: 20 },
+  { x: 150, y: 100, width: 100, height: 20 },
+  { x: 90, y: 280, width: 100, height: 20 },
 ];
 
 // Helpers
@@ -295,9 +299,9 @@ function draw() {
     ctx.fillText(`action:${action} pos:${Math.round(player.x)},${Math.round(player.y)} vx:${player.vx} vy:${player.vy.toFixed(2)}`, 8, 16);
     ctx.fillText(`hitbox:${Math.round(hbInfo.x)},${Math.round(hbInfo.y)} ${Math.round(hbInfo.width)}x${Math.round(hbInfo.height)}`, 8, 32);
   // show selected hitbox side and current adjustment values
-  const adj = hitboxAdjustments[action];
-  ctx.fillText(`selected:${hitboxEdit || '-'}  left(offsetX):${adj.offsetX}  top(offsetY):${adj.offsetY}`, 8, 48);
-  ctx.fillText(`right(width):${adj.width}  bottom(height):${adj.height}  [H/K/J/L select] [] adjust  R reset`, 8, 64);
+    const adj = hitboxAdjustments[action];
+    ctx.fillText(`selected:${hitboxEdit || '-'}  left(offsetX):${adj.offsetX}  top(offsetY):${adj.offsetY}`, 8, 48);
+    ctx.fillText(`right(width):${adj.width}  bottom(height):${adj.height}  [H/K/J/L select] [] adjust  R reset`, 8, 64);
     ctx.restore();
   }
 }
