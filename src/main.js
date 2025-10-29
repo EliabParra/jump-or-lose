@@ -110,7 +110,7 @@ const tiles = [
   { x: 450, y: 300, width: 100, height: 20 },
   { x: 300, y: 200, width: 100, height: 20 },
   { x: 150, y: 100, width: 100, height: 20 },
-  { x: 90, y: 280, width: 100, height: 20 },
+  { x: 40, y: 280, width: 100, height: 20 },
 ];
 
 // Helpers
