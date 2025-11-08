@@ -1,3 +1,4 @@
+import Menu from './UI/menu.js';
 import Keyboard from './core/keyboard.js';
 import Renderer from './core/renderer.js';
 import World from './core/world.js';
@@ -5,7 +6,8 @@ import Player from './entities/player.js';
 import Engine from './core/engine.js';
 import * as C from './config/constants.js';
 
-const canvas = document.getElementById("gameCanvas");
+const canvas = document.createElement("canvas")
+canvas.id = "gameCanvas"
 
 // ------------------ Mapa inicial ------------------
 const map = [
@@ -72,6 +74,7 @@ class Game {
     this.world = null;
     this.player = null;
     this.engine = null;
+    this.menu = null;
     this._boundDebugHandler = this._onDebugKey.bind(this);
   }
 
@@ -98,7 +101,14 @@ class Game {
     });
   }
 
+  async loadMenu() {
+    this.menu = new Menu({ startGame: this.start.bind(this), stopGame: this.stop.bind(this) })
+    this.menu.addToBody()
+  }
+
   async start() {
+    
+    document.body.appendChild(this.canvas)
     await this.loadAllAssets();
     this._initComponents();
     this.engine.start();
@@ -137,6 +147,4 @@ class Game {
 }
 
 const game = new Game(canvas);
-game.start();
-
-//bolas 
+game.loadMenu()

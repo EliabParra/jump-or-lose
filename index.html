@@ -3,13 +3,28 @@
   <head>
     <meta charset="utf-8" />
     <title>Demo Ascenso</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
-      body { background:#222; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; }
-      canvas { image-rendering: pixelated; border:1px solid #444; }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+          font-family: 'Press Start 2P', cursive;
+          background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 100%);
+          height: 100vh;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          overflow: hidden;
+          position: relative;
+      }
+      canvas { image-rendering: pixelated; border:1px solid #444; width: 100vw; height: 100vh; }
     </style>
   </head>
   <body>
-    <canvas id="gameCanvas" width="640" height="360"></canvas>
     <script src="src/main.js" type="module"></script>
   </body>
 </html>
