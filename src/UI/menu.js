@@ -81,6 +81,7 @@ class Menu extends HTMLElement {
         this.$leaderboard = this.shadowRoot.querySelector('#leaderboard')
         this.$gameOver = this.shadowRoot.querySelector('#gameOver')
 
+        //TODO: manejar el score de cada jugador con indexeddb, eso lo hare luego
         this.$finalScore = this.shadowRoot.querySelector('.final-score .score-number')
     }
 

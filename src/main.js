@@ -124,9 +124,10 @@ class Game {
   _initComponents() {
     this.keyboard = new Keyboard();
     this.renderer = new Renderer(this.canvas);
-    // 🔹 Pasamos TODOS los tilesets y backgrounds al World
+    // Pasamos TODOS los tilesets y backgrounds al World
     this.world = new World(map, tileSets, backgrounds);
     this.player = new Player(150, 20, sprites, frameData, hitboxAdjustments);
+    // aqui se pasa el objeto handlers que se crea en el main
     this.engine = new Engine(this.renderer, this.world, this.player, this.keyboard, { gameOver: this.gameOver.bind(this) });
   }
 

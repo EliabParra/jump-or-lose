@@ -42,6 +42,12 @@ export default class Engine {
     if (this.world.stage === "asteroids") multiplier = 3;
     this.score = Math.max(this.score, base * multiplier);
 
+    /* 
+      alex desde aqui se llama gameover y si quieres utilizar
+      mas funciones que vengan de afuera solo las tienes que incluirlas
+      en el objeto handlers que se manda al constructor de engine desde el main
+      ahorita es solo un ejemplo pero ya tu lo pones como quieras
+    */
     if (this.score > 30) this.handlers.gameOver()
   }
 
