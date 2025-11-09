@@ -107,7 +107,6 @@ class Game {
   }
 
   async start() {
-    
     document.body.appendChild(this.canvas)
     await this.loadAllAssets();
     this._initComponents();
@@ -119,6 +118,7 @@ class Game {
     window.removeEventListener('keydown', this._boundDebugHandler);
     if (this.engine) this.engine.running = false;
     if (this.keyboard) this.keyboard.dispose();
+    this.canvas.remove();
   }
 
   _initComponents() {
@@ -127,7 +127,12 @@ class Game {
     // 🔹 Pasamos TODOS los tilesets y backgrounds al World
     this.world = new World(map, tileSets, backgrounds);
     this.player = new Player(150, 20, sprites, frameData, hitboxAdjustments);
-    this.engine = new Engine(this.renderer, this.world, this.player, this.keyboard);
+    this.engine = new Engine(this.renderer, this.world, this.player, this.keyboard, { gameOver: this.gameOver.bind(this) });
+  }
+
+  gameOver() {
+    this.stop()
+    this.menu.gameOver()
   }
 
   _onDebugKey(e) {

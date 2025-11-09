@@ -14,7 +14,7 @@
         0 20px 60px rgba(0, 0, 0, 0.5),
         inset 0 2px 0 rgba(255, 255, 255, 0.2);
     position: relative;
-    z-index: 1;
+    z-index: 10;
 }
 
 .container::before {
@@ -134,9 +134,14 @@ input[type="text"]:focus {
     background: #FFF8DC;
     border: 4px solid #5D4037;
     border-radius: 10px;
-    padding: 20px;
-    margin-top: 20px;
+    padding: 0 20px;
+    margin-top: 0;
     box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transform-origin: top center;
+    transition: max-height 150ms ease, opacity 220ms ease, padding 220ms ease, transform 150ms ease;
 }
 
 .leaderboard h2 {
@@ -144,6 +149,15 @@ input[type="text"]:focus {
     font-size: 16px;
     text-align: center;
     margin-bottom: 20px;
+}
+
+/* Clase que indica que el leaderboard está abierto (se expande con animación) */
+.leaderboard.open {
+    max-height: 800px;
+    opacity: 1;
+    padding: 20px;
+    margin-top: 20px;
+    transform: scaleY(1);
 }
 
 .leaderboard-list {
@@ -188,17 +202,15 @@ input[type="text"]:focus {
 
 /* Game Over Screen */
 .game-over {
-    display: none;
-    background: rgba(0, 0, 0, 0.95);
+    display: flex;
     position: fixed;
-    inset: 0;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     z-index: 1000;
     justify-content: center;
     align-items: center;
-}
-
-.game-over.active {
-    display: flex;
+    width: 600px;
 }
 
 .game-over-content {
@@ -207,8 +219,7 @@ input[type="text"]:focus {
     border-radius: 20px;
     padding: 50px 40px;
     text-align: center;
-    max-width: 500px;
-    width: 90%;
+    width: 100%;
     position: relative;
     animation: slideDown 0.5s ease-out;
 }

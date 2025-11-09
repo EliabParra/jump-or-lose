@@ -1,9 +1,10 @@
 export default class Engine {
-  constructor(renderer, world, player, keyboard) {
+  constructor(renderer, world, player, keyboard, handlers = {}) {
     this.renderer = renderer;
     this.world = world;
     this.player = player;
     this.keyboard = keyboard;
+    this.handlers = handlers;
 
     this.running = false;
     this.facing = "right";
@@ -40,6 +41,8 @@ export default class Engine {
     if (this.world.stage === "clouds") multiplier = 2;
     if (this.world.stage === "asteroids") multiplier = 3;
     this.score = Math.max(this.score, base * multiplier);
+
+    if (this.score > 30) this.handlers.gameOver()
   }
 
   draw() {
@@ -63,5 +66,9 @@ export default class Engine {
       8, 60,
       { color: "black" }
     );
+  }
+
+  gameOver() {
+
   }
 }

@@ -29,7 +29,7 @@ class Menu extends HTMLElement {
                     <button class="btn btn-leaderboard">🏆 Tabla de Líderes</button>
                 </div>
 
-                <div class="leaderboard hidden" id="leaderboard">
+                <div class="leaderboard" id="leaderboard">
                     <h2>🏆 TOP 5 GRANJEROS 🏆</h2>
                     <ul class="leaderboard-list">
                         <li class="leaderboard-item">
@@ -41,7 +41,7 @@ class Menu extends HTMLElement {
             </div>
 
             <!-- Pantalla de Game Over -->
-            <div class="game-over" id="gameOver">
+            <div class="game-over hidden" id="gameOver">
                 <div class="game-over-content">
                     <h1 class="game-over-title">GAME OVER</h1>
                     
@@ -116,7 +116,8 @@ class Menu extends HTMLElement {
     #handleLeaderboardClick(e) {
         // alternar vista de leaderboard dentro del shadow DOM
         if (!this.$leaderboard) return;
-        this.$leaderboard.classList.toggle('hidden');
+        // alternar clase 'open' para animación suave (CSS controla la transición)
+        this.$leaderboard.classList.toggle('open');
     }
 
     async #handleRetryClick(e) {
@@ -155,6 +156,7 @@ class Menu extends HTMLElement {
 
     hide() {
         if (this.$mainMenu) this.$mainMenu.classList.add('hidden');
+        if (this.$gameOver) this.$gameOver.classList.add('hidden');
     }
 
     toggle() {
@@ -165,6 +167,8 @@ class Menu extends HTMLElement {
     addToBody() {
         if (!document.body.contains(this)) document.body.appendChild(this);
     }
+
+    gameOver() { if (this.$gameOver) this.$gameOver.classList.remove('hidden') }
 }
 
 customElements.define('game-menu', Menu);
