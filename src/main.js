@@ -1,3 +1,4 @@
+import IndexedDbManager from './indexedDB/IndexedDBManager.js';
 import Menu from './UI/menu.js';
 import Keyboard from './core/keyboard.js';
 import Renderer from './core/renderer.js';
@@ -75,6 +76,9 @@ class Game {
     this.player = null;
     this.engine = null;
     this.menu = null;
+    this.db = new IndexedDbManager('players', 'players')
+    this.db.openDatabase()
+
     this._boundDebugHandler = this._onDebugKey.bind(this);
   }
 
@@ -101,12 +105,15 @@ class Game {
     });
   }
 
-  async loadMenu() {
+  loadMenu() {
     this.menu = new Menu({ startGame: this.start.bind(this), stopGame: this.stop.bind(this) })
+    // Asignar la instancia de DB antes de agregar el componente al DOM para evitar condiciones de carrera
+    this.menu.db = this.db
     this.menu.addToBody()
   }
 
-  async start() {
+  async start(playerName) {
+    this.playerName = playerName;
     document.body.appendChild(this.canvas)
     await this.loadAllAssets();
     this._initComponents();
@@ -131,9 +138,17 @@ class Game {
     this.engine = new Engine(this.renderer, this.world, this.player, this.keyboard, { gameOver: this.gameOver.bind(this) });
   }
 
-  gameOver() {
-    this.stop()
-    this.menu.gameOver()
+  async gameOver() {
+    try {
+      const player = await this.db.getItemByName(this.playerName);
+      player.score = this.engine.score;
+      player.bestScore = player.score > player.bestScore ? player.score : player.bestScore;
+      await this.db.updateItem(player);
+      this.stop()
+      await this.menu.gameOver()
+    } catch (error) {
+      console.error(`Error en el método gameOver: ${error}`)
+    }
   }
 
   _onDebugKey(e) {

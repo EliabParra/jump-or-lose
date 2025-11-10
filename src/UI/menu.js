@@ -1,9 +1,10 @@
-class Menu extends HTMLElement {
+export default class Menu extends HTMLElement {
     constructor(handlers) {
         super()
         this.handlers = handlers
         this.attachShadow({ mode: 'open' })
         this.stylesFileName = 'menu.css'
+        this.db = null
     }
 
     async connectedCallback() {
@@ -32,10 +33,7 @@ class Menu extends HTMLElement {
                 <div class="leaderboard" id="leaderboard">
                     <h2>🏆 TOP 5 GRANJEROS 🏆</h2>
                     <ul class="leaderboard-list">
-                        <li class="leaderboard-item">
-                            <span class="player-name">1. Lewis</span>
-                            <span class="score">⭐ 9850</span>
-                        </li>
+
                     </ul>
                 </div>
             </div>
@@ -48,6 +46,8 @@ class Menu extends HTMLElement {
                     <div class="final-score">
                         <p>Tu puntuación final:</p>
                         <div class="score-number" id="finalScore">0</div>
+                        <p>Tu mejor puntuación:</p>
+                        <div class="score-number" id="bestScore">0</div>
                     </div>
 
                     <div class="game-over-buttons">
@@ -80,16 +80,16 @@ class Menu extends HTMLElement {
         this.$leaderboardBtn = this.shadowRoot.querySelector('.btn-leaderboard')
         this.$leaderboard = this.shadowRoot.querySelector('#leaderboard')
         this.$gameOver = this.shadowRoot.querySelector('#gameOver')
+        this.$finalScore = this.shadowRoot.querySelector('#finalScore')
+        this.$bestScore = this.shadowRoot.querySelector('#bestScore')
 
-        //TODO: manejar el score de cada jugador con indexeddb, eso lo hare luego
-        this.$finalScore = this.shadowRoot.querySelector('.final-score .score-number')
+        this.updateLeaderboard()
     }
 
     #setupEvents() {
         return new Promise((resolve, reject) => {
             try {
                 // eventos de los controles del menú
-                this.$playerName.addEventListener('input', this.#handlePlayerNameInput.bind(this))
                 this.$playBtn.addEventListener('click', this.#handlePlayClick.bind(this))
                 this.$leaderboardBtn.addEventListener('click', this.#handleLeaderboardClick.bind(this))
                 // pantalla de game-over
@@ -108,10 +108,15 @@ class Menu extends HTMLElement {
     }
     // manejadores internos
     async #handlePlayClick(e) {
-        const name = this.$playerName.value || 'Player';
-        // delegar la acción al handler externo
-        await this.handlers.startGame({ playerName: name });
-        this.hide();
+        try {
+            const playerName = this.$playerName.value || 'Player';
+            const player = await this.db.getItemByName(playerName);
+            if (!player) await this.db.addItem({ name: playerName, score: 0, bestScore: 0 })
+            await this.handlers.startGame(playerName)
+            this.hide()
+        } catch (error) {
+            console.error(`Error en el método handlePlayClick: ${error}`)
+        }
     }
 
     #handleLeaderboardClick(e) {
@@ -123,8 +128,8 @@ class Menu extends HTMLElement {
 
     async #handleRetryClick(e) {
         // reiniciar partida
-        const name = this.$playerName.value || 'Player';
-        await this.handlers.startGame({ playerName: name, retry: true });
+        const playerName = this.$playerName.value || 'Player';
+        await this.handlers.startGame(playerName);
         this.hide();
     }
 
@@ -132,10 +137,6 @@ class Menu extends HTMLElement {
         // volver al menú desde Game Over
         this.show();
         this.handlers.stopGame();
-    }
-
-    #handlePlayerNameInput(e) {
-        // aquí podríamos guardar localStorage u otras reacciones
     }
 
     #handleGameOverClick(e) {
@@ -169,8 +170,38 @@ class Menu extends HTMLElement {
         if (!document.body.contains(this)) document.body.appendChild(this);
     }
 
-    gameOver() { if (this.$gameOver) this.$gameOver.classList.remove('hidden') }
+    async gameOver() {
+        try {
+            const player = await this.db.getItemByName(this.$playerName.value || 'Player');
+            this.$finalScore.textContent = player.score;
+            this.$bestScore.textContent = player.bestScore;
+            await this.updateLeaderboard()
+            this.$gameOver.classList.remove('hidden')
+        } catch (error) {
+            console.error(`Error en el método gameOver: ${error}`)
+        }
+    }
+
+    async updateLeaderboard() {
+        try {
+            const leaderboard = await this.db.getAllItems();
+            this.$leaderboard.innerHTML = '';
+
+            leaderboard.sort((a, b) => b.bestScores - a.bestScore);
+            for (let i = 0; i < leaderboard.length; i++) {
+                const player = leaderboard[i];
+                const item = document.createElement('li');
+                item.classList.add('leaderboard-item');
+                item.innerHTML = `
+                    <span class="player-name">${player.name}</span>
+                    <span class="score">⭐ ${player.bestScore}</span>
+                `;
+                this.$leaderboard.appendChild(item);
+            }
+        } catch (error) {
+            console.error(`Error en el método updateLeaderboard: ${error}`)
+        }
+    }
 }
 
 customElements.define('game-menu', Menu);
-export default Menu;

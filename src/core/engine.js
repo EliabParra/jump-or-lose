@@ -48,7 +48,7 @@ export default class Engine {
       en el objeto handlers que se manda al constructor de engine desde el main
       ahorita es solo un ejemplo pero ya tu lo pones como quieras
     */
-    if (this.score > 30) this.handlers.gameOver()
+    if (this.player.y > 100) this.handlers.gameOver()
   }
 
   draw() {
