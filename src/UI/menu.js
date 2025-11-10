@@ -79,6 +79,7 @@ export default class Menu extends HTMLElement {
         this.$playBtn = this.shadowRoot.querySelector('.btn-play')
         this.$leaderboardBtn = this.shadowRoot.querySelector('.btn-leaderboard')
         this.$leaderboard = this.shadowRoot.querySelector('#leaderboard')
+        this.$leaderboardList = this.shadowRoot.querySelector('.leaderboard-list')
         this.$gameOver = this.shadowRoot.querySelector('#gameOver')
         this.$finalScore = this.shadowRoot.querySelector('#finalScore')
         this.$bestScore = this.shadowRoot.querySelector('#bestScore')
@@ -184,24 +185,25 @@ export default class Menu extends HTMLElement {
 
     async updateLeaderboard() {
         try {
-            const leaderboard = await this.db.getAllItems();
-            this.$leaderboard.innerHTML = '';
+            const leaderboard = await this.db.getAllItems()
+            this.$leaderboardList.innerHTML = ''
 
-            leaderboard.sort((a, b) => b.bestScores - a.bestScore);
-            for (let i = 0; i < leaderboard.length; i++) {
-                const player = leaderboard[i];
-                const item = document.createElement('li');
-                item.classList.add('leaderboard-item');
+            leaderboard
+            .sort((a, b) => b.bestScore - a.bestScore)
+            .slice(0, 5)
+            .forEach(player => {
+                const item = document.createElement('li')
+                item.classList.add('leaderboard-item')
                 item.innerHTML = `
                     <span class="player-name">${player.name}</span>
                     <span class="score">⭐ ${player.bestScore}</span>
-                `;
-                this.$leaderboard.appendChild(item);
-            }
+                `
+                this.$leaderboardList.appendChild(item)
+            })
         } catch (error) {
             console.error(`Error en el método updateLeaderboard: ${error}`)
         }
     }
 }
 
-customElements.define('game-menu', Menu);
+customElements.define('game-menu', Menu)

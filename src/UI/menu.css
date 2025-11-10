@@ -162,6 +162,7 @@ input[type="text"]:focus {
 
 .leaderboard-list {
     list-style: none;
+    padding: 0;
 }
 
 .leaderboard-item {
