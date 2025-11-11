@@ -45,6 +45,19 @@ export default class Engine {
     // Actualizar mundo (chunks, fade de tiles, limpieza de tiles viejos)
     this.world.update(this.player);
 
+    // 🔹 Limitar al jugador dentro de los bordes del canvas
+    const leftLimit = 0;
+    const rightLimit = this.renderer.canvas.width - this.player.width;
+
+    if (this.player.x < leftLimit) {
+      this.player.x = leftLimit;
+      this.player.vx = 0;
+    }
+    if (this.player.x > rightLimit) {
+      this.player.x = rightLimit;
+      this.player.vx = 0;
+    }
+
     // Puntuación por altura
     const base = Math.max(0, Math.floor(-this.player.y / 10));
     let multiplier = 1;
