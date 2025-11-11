@@ -61,9 +61,34 @@ export default class Renderer {
     this.ctx.fillText(txt, x, y);
   }
 
-  // Método extra: dibujar puntuación y etapa actual
-  drawScore(score) {
+  drawScore(score, stage) {
+    if (this.hudElement) {
+      try { this.hudElement.textContent = `Score: ${score}`; } catch (e) {}
+      return;
+    }
+
     if (!this.ctx) return;
-    this.text(`Score: ${score}`, 10, 20, { color: 'white', font: '16px monospace' });
+    const fontSize = 12;
+    const font = `${fontSize}px monospace`;
+    const padding = 8;
+    const x = 10, y = 10;
+    const text = `Score: ${score}`;
+
+    this.ctx.save();
+    this.ctx.font = font;
+    this.ctx.textBaseline = 'top';
+    const textWidth = Math.ceil(this.ctx.measureText(text).width);
+    const w = textWidth + padding * 2;
+    const h = fontSize + padding * 2;
+
+    this.ctx.fillStyle = 'rgba(255,209,102,0.95)';
+    this.ctx.fillRect(x, y, w, h);
+    this.ctx.lineWidth = 1;
+    this.ctx.strokeStyle = 'rgba(180,120,0,0.9)';
+    this.ctx.strokeRect(x, y, w, h);
+
+    this.ctx.fillStyle = '#111';
+    this.ctx.fillText(text, x + padding, y + padding);
+    this.ctx.restore();
   }
 }

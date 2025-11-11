@@ -121,11 +121,23 @@ class Game {
     if (this.engine) this.engine.running = false;
     if (this.keyboard) this.keyboard.dispose();
     this.canvas.remove();
+    try {
+      if (this.renderer && this.renderer.hudElement) this.renderer.hudElement.remove();
+    } catch (e) {}
   }
 
   _initComponents() {
     this.keyboard = new Keyboard();
     this.renderer = new Renderer(this.canvas);
+
+    try {
+      const hud = document.createElement('div');
+      hud.id = 'scoreHUD';
+      hud.className = 'score-hud';
+      hud.textContent = 'Score: 0';
+      document.body.appendChild(hud);
+      this.renderer.hudElement = hud;
+    } catch (e) {}
 
     // World con mapa inicial fijo interno
     this.world = new World(tileSets, backgrounds);

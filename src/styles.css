@@ -47,3 +47,19 @@ canvas {
     pointer-events: none; 
 }
 
+.score-hud {
+    position: fixed;
+    left: 15px;
+    top: 15px;
+    z-index: 10000;
+    padding: 8px 10px;
+    background: rgba(255,209,102,0.95);
+    border: 1px solid rgba(180,120,0,0.9);
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: #402c26ff;
+    pointer-events: none;
+}
+
