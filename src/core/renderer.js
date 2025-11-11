@@ -62,11 +62,8 @@ export default class Renderer {
   }
 
   // Método extra: dibujar puntuación y etapa actual
-  drawScore(score, stage) {
+  drawScore(score) {
     if (!this.ctx) return;
     this.text(`Score: ${score}`, 10, 20, { color: 'white', font: '16px monospace' });
-    if (stage) {
-      this.text(`Stage: ${stage}`, 10, 40, { color: 'white', font: '14px monospace' });
-    }
   }
 }

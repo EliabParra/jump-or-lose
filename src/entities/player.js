@@ -9,7 +9,7 @@ export default class Player {
     this.vy = 0;
 
     this.speed = 2;
-    this.jumpPower = -10;
+    this.jumpPower = -7;
     this.accel = 0.2;
     this.friction = 0.2;
     this.fastFallMultiplier = 3;
@@ -72,7 +72,10 @@ export default class Player {
     this.onGround = false;
     const hb = this.getHitbox(this.x, this.y, this.action);
 
-    for (let tile of world.getTiles()) {
+    // Usar tiles activos si están disponibles
+    const tiles = typeof world.getActiveTiles === 'function' ? world.getActiveTiles() : world.getTiles();
+
+    for (let tile of tiles) {
       if (!this.isColliding(hb, tile)) continue;
 
       if (prevHB.y + prevHB.height <= tile.y) {
@@ -81,6 +84,11 @@ export default class Player {
         this.y -= overlap;
         this.vy = 0;
         this.onGround = true;
+
+        // Iniciar desvanecimiento del tile al pisarlo (si el mundo lo soporta)
+        if (typeof world.onTileStepped === 'function') {
+          world.onTileStepped(tile);
+        }
       } else if (prevHB.y >= tile.y + tile.height) {
         // Golpearse con el techo
         const overlap = tile.y + tile.height - hb.y;

@@ -1,3 +1,5 @@
+import * as C from "../config/constants.js";
+
 export default class Engine {
   constructor(renderer, world, player, keyboard, handlers = {}) {
     this.renderer = renderer;
@@ -10,6 +12,9 @@ export default class Engine {
     this.facing = "right";
     this.debug = false;
     this.score = 0;
+
+    // Suelo inicial (para game over)
+    this.sueloInicialY = this.world.initialChunk.length * C.TILE_SIZE;
 
     this._loop = this._loop.bind(this);
   }
@@ -33,22 +38,24 @@ export default class Engine {
     if (this.keyboard.isDown("ArrowRight")) this.facing = "right";
     else if (this.keyboard.isDown("ArrowLeft")) this.facing = "left";
 
+    // Actualizar jugador con tiles activos
     this.player.update(this.keyboard.keys, this.world);
-    this.world.update(this.player.y);
 
+    // Actualizar mundo (chunks, fade de tiles)
+    this.world.update(this.player);
+
+    // Puntuación por altura
     const base = Math.max(0, Math.floor(-this.player.y / 10));
     let multiplier = 1;
     if (this.world.stage === "clouds") multiplier = 2;
     if (this.world.stage === "asteroids") multiplier = 3;
     this.score = Math.max(this.score, base * multiplier);
 
-    /* 
-      alex desde aqui se llama gameover y si quieres utilizar
-      mas funciones que vengan de afuera solo las tienes que incluirlas
-      en el objeto handlers que se manda al constructor de engine desde el main
-      ahorita es solo un ejemplo pero ya tu lo pones como quieras
-    */
-    if (this.player.y > 100) this.handlers.gameOver()
+    // Game Over si cae por debajo del suelo inicial
+    if (this.player.y > this.sueloInicialY) {
+      if (this.handlers.gameOver) this.handlers.gameOver();
+      this.stop();
+    }
   }
 
   draw() {
@@ -68,13 +75,13 @@ export default class Engine {
 
   _drawDebugOverlay(renderer, cameraY) {
     renderer.text(
-      `pos:${Math.round(this.player.x)},${Math.round(this.player.y)} vx:${this.player.vx.toFixed(2)} vy:${this.player.vy.toFixed(2)}`,
+      `pos:${Math.round(this.player.x)},${Math.round(this.player.y)} vy:${this.player.vy.toFixed(2)}`,
       8, 60,
       { color: "black" }
     );
   }
 
   gameOver() {
-
+    console.log("Game Over");
   }
 }

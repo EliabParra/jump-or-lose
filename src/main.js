@@ -7,16 +7,8 @@ import Player from './entities/player.js';
 import Engine from './core/engine.js';
 import * as C from './config/constants.js';
 
-const canvas = document.createElement("canvas")
-canvas.id = "gameCanvas"
-
-// ------------------ Mapa inicial ------------------
-const map = [
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
-];
+const canvas = document.createElement("canvas");
+canvas.id = "gameCanvas";
 
 // ------------------ Sprites del jugador ------------------
 const sprites = {
@@ -76,8 +68,12 @@ class Game {
     this.player = null;
     this.engine = null;
     this.menu = null;
-    this.db = new IndexedDbManager('players', 'players')
-    this.db.openDatabase()
+
+    this.playerName = null;
+
+    // DB
+    this.db = new IndexedDbManager('players', 'players');
+    this.db.openDatabase();
 
     this._boundDebugHandler = this._onDebugKey.bind(this);
   }
@@ -106,15 +102,14 @@ class Game {
   }
 
   loadMenu() {
-    this.menu = new Menu({ startGame: this.start.bind(this), stopGame: this.stop.bind(this) })
-    // Asignar la instancia de DB antes de agregar el componente al DOM para evitar condiciones de carrera
-    this.menu.db = this.db
-    this.menu.addToBody()
+    this.menu = new Menu({ startGame: this.start.bind(this), stopGame: this.stop.bind(this) });
+    this.menu.db = this.db;
+    this.menu.addToBody();
   }
 
   async start(playerName) {
     this.playerName = playerName;
-    document.body.appendChild(this.canvas)
+    document.body.appendChild(this.canvas);
     await this.loadAllAssets();
     this._initComponents();
     this.engine.start();
@@ -131,11 +126,24 @@ class Game {
   _initComponents() {
     this.keyboard = new Keyboard();
     this.renderer = new Renderer(this.canvas);
-    // Pasamos TODOS los tilesets y backgrounds al World
-    this.world = new World(map, tileSets, backgrounds);
-    this.player = new Player(150, 20, sprites, frameData, hitboxAdjustments);
-    // aqui se pasa el objeto handlers que se crea en el main
-    this.engine = new Engine(this.renderer, this.world, this.player, this.keyboard, { gameOver: this.gameOver.bind(this) });
+
+    // World con mapa inicial fijo interno
+    this.world = new World(tileSets, backgrounds);
+
+    // Posicionar jugador sobre el suelo del chunk inicial:
+    // initialChunk tiene 6 filas; el suelo está en la fila 5 => y = 5*TILE_SIZE
+    const sueloY = 5 * C.TILE_SIZE;
+    const playerHeight = frameData.idle.h; // 24 px en tu config
+    this.player = new Player(150, sueloY - playerHeight, sprites, frameData, hitboxAdjustments);
+
+    // Engine con handler de Game Over
+    this.engine = new Engine(
+      this.renderer,
+      this.world,
+      this.player,
+      this.keyboard,
+      { gameOver: this.gameOver.bind(this) }
+    );
   }
 
   async gameOver() {
@@ -144,10 +152,10 @@ class Game {
       player.score = this.engine.score;
       player.bestScore = player.score > player.bestScore ? player.score : player.bestScore;
       await this.db.updateItem(player);
-      this.stop()
-      await this.menu.gameOver()
+      this.stop();
+      await this.menu.gameOver();
     } catch (error) {
-      console.error(`Error en el método gameOver: ${error}`)
+      console.error(`Error en el método gameOver: ${error}`);
     }
   }
 
@@ -168,4 +176,100 @@ class Game {
 }
 
 const game = new Game(canvas);
-game.loadMenu()
+game.loadMenu();
+
+/*
+
+// Chunk inicial fijo (suelo garantizado)
+    this.initialChunk = [
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,1,1,1,1,0,0,0,1,1,1,1,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+    ];
+
+    // Construir tiles iniciales (con estado de fade)
+    this.tiles = this.buildTilesFromMap(this.initialChunk);
+
+    // Umbrales de transición
+    this.stageThresholds = { clouds: -4000, asteroids: -10000 };
+
+    // Patrones de chunks (puedes ampliar)
+    this.chunkPatterns = {
+      grass: [
+        [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [1,1,1,1,0,0,0,0,1,1,1,1,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [1,1,0,0,0,0,1,1,0,0,0,0,1,1,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,1,1,1,1,0,0,0,0,1,1],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ],
+        [
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+         [0,0,0,1,0,1,0,0,0,0,0,0,0,1,0],
+         [0,0,1,0,0,0,1,0,0,0,0,0,1,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0],
+         [0,0,1,0,0,0,0,0,0,0,1,0,0,0,0],
+         [0,1,0,1,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,1,0,0,0,0,0,0,0,0,0,1],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ],
+      
+        [
+         [0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,1,1,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],
+         [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0],
+         [0,1,0,0,0,0,0,1,0,0,0,0,0,0,0],
+         [0,0,1,0,0,0,0,1,0,0,0,0,0,0,0],
+         [0,0,1,0,0,0,0,0,1,0,0,0,0,0,1],
+         [0,1,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,1,1,0,0,0,0,0,0,0,1],
+         [0,0,0,0,1,0,0,1,0,0,0,0,0,0,0]
+        ]
+        [
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,1,1,0,0,0,0,0,0,1,1,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,1,0,0,0,0,0,1,1,1,1,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,1,1,0,0,0,0,1,1,1,1,1,1,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+        ]
+
+      ],
+      clouds: [
+        [[0,0,0,0,2,0,0,0,0,2,0,0,0,0,2],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,2,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
+      ],
+      asteroids: [
+        [[3,0,3,0,3,0,3,0,3,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [3,0,0,0,3,0,0,0,3,0,0,0,3,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+         [3,0,3,0,3,0,3,0,3,0,0,0,0,0,0],
+         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
+      ]
+    }; */
