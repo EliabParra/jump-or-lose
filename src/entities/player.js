@@ -31,6 +31,15 @@ export default class Player {
     // Sprite actual
     this.currentSprite = this.sprites.idle;
 
+    // Efecto de sonido de salto
+    try {
+      this.jumpSound = new Audio('assets/sound/jump_snd.mp3');
+      this.jumpSound.volume = 0.5;
+    } catch (e) {
+      this.jumpSound = null;
+      console.warn('No se pudo cargar jump sound:', e);
+    }
+
     // Edge detection para evitar salto infinito y manejar agacharse correctamente
     this._prevKeys = {};
   }
@@ -134,7 +143,16 @@ export default class Player {
     if (wantsJump && this.onGround && !isCrouching) {
       this.vy = this.jumpPower;
       this.onGround = false;
+      // reproducir sonido de salto si está disponible y no está deshabilitado
+      try {
+        const disabled = localStorage.getItem('musicEnabled') === '0';
+        if (!disabled && this.jumpSound) {
+          this.jumpSound.currentTime = 0;
+          this.jumpSound.play().catch(()=>{});
+        }
+      } catch(e) {}
     }
+    
 
     // Gravedad y caída rápida (fast-fall)
     let gravityThisFrame = GRAVITY;

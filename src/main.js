@@ -42,6 +42,32 @@ backgrounds.grass.src     = C.ASSET_PATH + "bg_Grass.png";
 backgrounds.clouds.src    = C.ASSET_PATH + "bg_Clouds.png";
 backgrounds.asteroids.src = C.ASSET_PATH + "bg_Asteroids.png";
 
+// ------------------ Música de Fondo ------------------
+const backgroundMusic = new Audio('./assets/sound/TV_GAME.ogg');
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.2;
+
+let isMusicPlaying = true;
+let musicIcon = null; 
+
+function toggleMusic() {
+  isMusicPlaying = !isMusicPlaying;
+  try {
+    if (isMusicPlaying) {
+      backgroundMusic.play();
+    } else {
+      backgroundMusic.pause();
+    }
+    localStorage.setItem('musicEnabled', isMusicPlaying ? '1' : '0');
+
+    if (musicIcon) {
+      musicIcon.src = isMusicPlaying ? 'assets/sprites/snd_on.png' : 'assets/sprites/snd_off.png';
+    }
+  } catch (e) {
+    console.error('Error toggling music', e);
+  }
+}
+
 // ------------------ Animaciones ------------------
 const frameData = {
   idle:   { w: 20, h: 24, frames: 8, scale: C.DEFAULT_SCALE },
@@ -177,3 +203,34 @@ class Game {
 
 const game = new Game(canvas);
 game.loadMenu();
+
+// ------------------ Botón de Audio ------------------
+;(function createMusicToggleButton(){
+  const saved = localStorage.getItem('musicEnabled');
+  if (saved === '0') isMusicPlaying = false;
+
+  try {
+    if (isMusicPlaying) backgroundMusic.play().catch(()=>{});
+    else backgroundMusic.pause();
+  } catch(e) {}
+
+  const btn = document.createElement('button');
+  btn.id = 'musicToggle';
+  btn.className = 'music-toggle-btn';
+  btn.setAttribute('aria-label', 'Alternar sonido');
+  btn.title = 'Alternar sonido';
+
+  musicIcon = document.createElement('img');
+  musicIcon.id = 'musicIcon';
+  musicIcon.alt = 'toggle-sound';
+  musicIcon.width = 40;
+  musicIcon.height = 40;
+  musicIcon.src = isMusicPlaying ? 'assets/sprites/snd_on.png' : 'assets/sprites/snd_off.png';
+
+  btn.appendChild(musicIcon);
+  document.body.appendChild(btn);
+
+  btn.addEventListener('click', (e) => {
+    toggleMusic();
+  });
+})();

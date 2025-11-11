@@ -101,6 +101,7 @@ input[type="text"]:focus {
     box-shadow: 0 6px 0 #3E2723;
     position: relative;
     top: 0;
+    cursor: url('../../assets/sprites/pointer.png'), pointer;
 }
 
 .btn:active {

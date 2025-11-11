@@ -1,0 +1,49 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    cursor: url('../assets/sprites/cursor.png'), auto;
+}
+
+body {
+    font-family: 'Press Start 2P', cursive;
+    background: url("../assets/sprites/bg_Menu.jpg");
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+}
+
+canvas { 
+    image-rendering: pixelated; 
+    border:1px solid #444; 
+    width: 100vw; 
+    height: 100vh; 
+}
+
+.music-toggle-btn {
+    position: fixed;
+    right: 14px;
+    top: 14px;
+    width: 48px;
+    height: 48px;
+    padding: 4px;
+    border: none;
+    background: transparent;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: url('../assets/sprites/pointer.png'), pointer;
+}
+
+.music-toggle-btn img {
+    width: 40px;
+    height: 40px;
+    display: block;
+    image-rendering: pixelated;
+    pointer-events: none; 
+}
+

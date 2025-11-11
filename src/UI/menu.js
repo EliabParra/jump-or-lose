@@ -22,16 +22,16 @@ export default class Menu extends HTMLElement {
 
                 <div class="input-section">
                     <label for="playerName">Ingresa tu nombre:</label>
-                    <input type="text" id="playerName" placeholder="Granjero" maxlength="15">
+                    <input type="text" id="playerName" placeholder="Jugador" maxlength="15">
                 </div>
 
                 <div class="buttons">
                     <button class="btn btn-play">▶ Jugar</button>
-                    <button class="btn btn-leaderboard">🏆 Tabla de Líderes</button>
+                    <button class="btn btn-leaderboard">Tabla de Lideres</button>
                 </div>
 
                 <div class="leaderboard" id="leaderboard">
-                    <h2>🏆 TOP 5 GRANJEROS 🏆</h2>
+                    <h2>TOP 5 GRANJEROS</h2>
                     <ul class="leaderboard-list">
 
                     </ul>
@@ -51,8 +51,8 @@ export default class Menu extends HTMLElement {
                     </div>
 
                     <div class="game-over-buttons">
-                        <button class="btn btn-retry">🔄 Intentar de nuevo</button>
-                        <button class="btn btn-menu">🏠 Menú Principal</button>
+                        <button class="btn btn-retry">Intentar de nuevo</button>
+                        <button class="btn btn-menu">Menu Principal</button>
                     </div>
                 </div>
             </div>
