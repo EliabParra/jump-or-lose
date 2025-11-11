@@ -9,7 +9,7 @@ export default class Player {
     this.vy = 0;
 
     this.speed = 2;
-    this.jumpPower = -7;
+    this.jumpPower = -6; 
     this.accel = 0.2;
     this.friction = 0.2;
     this.fastFallMultiplier = 3;
@@ -42,11 +42,15 @@ export default class Player {
 
     // Edge detection para evitar salto infinito y manejar agacharse correctamente
     this._prevKeys = {};
+
+    // Bandera para salto variable
+    this.isJumping = false;
   }
 
   // Comprueba solapamiento AABB entre dos rectángulos
   isColliding(a, b) {
-    return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    return a.x < b.x + b.width && a.x + a.width > b.x &&
+           a.y < b.y + b.height && a.y + a.height > b.y;
   }
 
   // Calcula la hitbox (AABB) del jugador en coordenadas de canvas
@@ -93,8 +97,9 @@ export default class Player {
         this.y -= overlap;
         this.vy = 0;
         this.onGround = true;
+        this.isJumping = false; // cortar salto variable al tocar suelo
 
-        // Iniciar desvanecimiento del tile al pisarlo (si el mundo lo soporta)
+        // Iniciar desvanecimiento del tile al pisarlo
         if (typeof world.onTileStepped === 'function') {
           world.onTileStepped(tile);
         }
@@ -103,6 +108,7 @@ export default class Player {
         const overlap = tile.y + tile.height - hb.y;
         this.y += overlap;
         this.vy = 0;
+        this.isJumping = false; // cortar salto si golpea techo
       } else if (prevHB.x + prevHB.width <= tile.x) {
         // Golpe lateral (izquierda del tile)
         const overlap = hb.x + hb.width - tile.x;
@@ -141,8 +147,10 @@ export default class Player {
     // Salto en borde de tecla, solo si está en el suelo y no agachado
     const wantsJump = justPressed('Space') || justPressed('ArrowUp');
     if (wantsJump && this.onGround && !isCrouching) {
-      this.vy = this.jumpPower;
+      this.vy = this.jumpPower; // impulso inicial
       this.onGround = false;
+      this.isJumping = true;    // activar salto variable
+
       // reproducir sonido de salto si está disponible y no está deshabilitado
       try {
         const disabled = localStorage.getItem('musicEnabled') === '0';
@@ -152,7 +160,16 @@ export default class Player {
         }
       } catch(e) {}
     }
-    
+
+    // Salto variable: mientras mantenga presionado y aún esté subiendo
+    if ((keys['Space'] || keys['ArrowUp']) && this.isJumping && this.vy < 0) {
+      this.vy -= 0.1; // impulso extra (ajustable para sensibilidad)
+    }
+
+    // Cortar salto si suelta tecla o deja de subir
+    if ((!keys['Space'] && !keys['ArrowUp']) || this.vy >= 0) {
+      this.isJumping = false;
+    }
 
     // Gravedad y caída rápida (fast-fall)
     let gravityThisFrame = GRAVITY;
