@@ -7,6 +7,9 @@ export default class World {
 
     this.stage = "grass";
     this.currentBackground = this.backgrounds.grass || null;
+    this.nextBackground = null;
+    this.bgTransitionStart = null;
+    this.bgTransitionDuration = 500; // ms
 
     // Chunk inicial fijo
     this.initialChunk = [
@@ -26,7 +29,7 @@ export default class World {
     // Stage thresholds
     this.stageThresholds = { clouds: -800, asteroids: -1600 };
 
-   // Patrones de chunks para cada etapa
+    // Patrones de ejemplo (los que ya tenías)
     this.chunkPatterns = {
       grass: [
         [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -182,34 +185,46 @@ export default class World {
   setStage(stageName) {
     if (this.stage === stageName) return;
     this.stage = stageName;
-    if (stageName === "grass") this.currentBackground = this.backgrounds.grass;
-    else if (stageName === "clouds") this.currentBackground = this.backgrounds.clouds;
-    else if (stageName === "asteroids") this.currentBackground = this.backgrounds.asteroids;
+
+    let newBg = null;
+    if (stageName === "grass") newBg = this.backgrounds.grass;
+    else if (stageName === "clouds") newBg = this.backgrounds.clouds;
+    else if (stageName === "asteroids") newBg = this.backgrounds.asteroids;
+
+    if (newBg && newBg !== this.currentBackground) {
+      this.nextBackground = newBg;
+      this.bgTransitionStart = Date.now();
+    }
   }
 
   update(player) {
     this._frameCount++;
 
-    // Stage transitions
-    if (player.y <= this.stageThresholds.asteroids && this.stage !== "asteroids") {
-      this.setStage("asteroids");
-    } else if (player.y <= this.stageThresholds.clouds && this.stage === "grass") {
+    // 🔹 Stage transitions con rangos claros
+    if (player.y > this.stageThresholds.clouds) {
+      // Por encima de -800 → grass
+      this.setStage("grass");
+    } else if (player.y <= this.stageThresholds.clouds && player.y > this.stageThresholds.asteroids) {
+      // Entre -800 y -1600 → clouds
       this.setStage("clouds");
+    } else if (player.y <= this.stageThresholds.asteroids) {
+      // Por debajo de -1600 → asteroids
+      this.setStage("asteroids");
     }
 
-    // Chunk generation: cap generations per frame to avoid spikes
-    const triggerDistance = TILE_SIZE * 20; // mantener 1–2 chunks arriba
+    // Chunk generation
+    const triggerDistance = TILE_SIZE * 20;
     const maxGenerationsPerFrame = 2;
     let gens = 0;
 
     while (player.y < this.nextChunkY + triggerDistance && gens < maxGenerationsPerFrame) {
-      if (this.tiles.length > this._maxTiles) break; // safety cap
+      if (this.tiles.length > this._maxTiles) break;
       this.generateChunk(this.stage, this.nextChunkY);
       this.nextChunkY -= this.chunkHeightRows * TILE_SIZE;
       gens++;
     }
 
-    // Fade tiles (no se eliminan, solo se desactivan)
+    // Fade tiles
     const now = Date.now();
     for (const tile of this.tiles) {
       if (tile.fadeStart) {
@@ -222,11 +237,10 @@ export default class World {
       }
     }
 
-    // 🔹 Eliminar tiles muy abajo (2 chunks por debajo del jugador)
+    // Eliminar tiles muy abajo (2 chunks por debajo del jugador)
     const bottomLimit = player.y + (this.chunkHeightRows * TILE_SIZE * 2);
     this.tiles = this.tiles.filter(t => t.y < bottomLimit);
 
-    // Reset cache
     this._activeTilesCache = null;
   }
 
@@ -267,7 +281,6 @@ export default class World {
     return this.tiles;
   }
 
-  // 🔹 Nuevo: límite dinámico de Game Over
   getGameOverLimit() {
     if (this.tiles.length === 0) return 0;
     const lowestTile = Math.max(...this.tiles.map(t => t.y));
@@ -275,9 +288,37 @@ export default class World {
   }
 
   draw(renderer, cameraY = 0) {
-    if (this.currentBackground) renderer.drawBackground(this.currentBackground);
-
     const ctx = renderer.ctx;
+
+    // 🔹 Transición de fondos
+    if (this.bgTransitionStart) {
+      const elapsed = Date.now() - this.bgTransitionStart;
+      const t = Math.min(1, elapsed / this.bgTransitionDuration);
+
+      if (this.currentBackground) {
+        ctx.save();
+        ctx.globalAlpha = 1 - t;
+        renderer.drawBackground(this.currentBackground);
+        ctx.restore();
+      }
+
+      if (this.nextBackground) {
+        ctx.save();
+        ctx.globalAlpha = t;
+        renderer.drawBackground(this.nextBackground);
+        ctx.restore();
+      }
+
+      if (t >= 1) {
+        this.currentBackground = this.nextBackground;
+        this.nextBackground = null;
+        this.bgTransitionStart = null;
+      }
+    } else {
+      if (this.currentBackground) renderer.drawBackground(this.currentBackground);
+    }
+
+    // Dibujar tiles
     for (let t of this.tiles) {
       let img = null;
       if (t.type === 1) img = this.tilesets.grass;
