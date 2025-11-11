@@ -214,7 +214,7 @@ const backgroundMusic = new Audio('./assets/sound/TV_GAME.ogg');
 backgroundMusic.loop = true;
 backgroundMusic.volume = 0.2;
 
-let isMusicPlaying = true;
+let isMusicPlaying = false;
 let musicIcon = null; 
 
 function toggleMusic() {
