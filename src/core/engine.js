@@ -65,12 +65,16 @@ export default class Engine {
     if (this.world.stage === "asteroids") multiplier = 3;
     this.score = Math.max(this.score, base * multiplier);
 
-    // 🔹 Game Over dinámico con transición
+    // Game Over dinámico con transición
     const gameOverLimit = this.world.getGameOverLimit();
     if (this.player.y > gameOverLimit) {
       if (!this._fallingToGameOver) {
         this._fallingToGameOver = true;
         this._fallStartTime = Date.now();
+       
+        try {
+          if (this.handlers && typeof this.handlers.onFallStart === 'function') this.handlers.onFallStart();
+        } catch (e) {}
       } else {
         const elapsed = (Date.now() - this._fallStartTime) / 1000;
         if (elapsed >= 2) { // 2 segundos de caída libre
@@ -85,7 +89,7 @@ export default class Engine {
     const r = this.renderer;
     r.clear();
 
-    // 🔹 Cámara centrada en el jugador pero bloqueada en el límite de game over
+    // Cámara centrada en el jugador pero bloqueada en el límite de game over
     const gameOverLimit = this.world.getGameOverLimit();
     const desiredCameraY = this.player.y - this.renderer.canvas.height / 2;
     const minCameraY = gameOverLimit - this.renderer.canvas.height / 2;

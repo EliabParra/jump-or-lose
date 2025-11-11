@@ -22,7 +22,7 @@ sprites.walk.src   = C.ASSET_PATH + "Junimo_Walk.png";
 sprites.jump.src   = C.ASSET_PATH + "Junimo_Jump.png";
 sprites.crouch.src = C.ASSET_PATH + "Junimo_Crouch.png";
 
-// ------------------ Tilesets (separados por tipo) ------------------
+// ------------------ Tilesets  ------------------
 const tileSets = {
   grass: new Image(),
   clouds: new Image(),
@@ -41,32 +41,6 @@ const backgrounds = {
 backgrounds.grass.src     = C.ASSET_PATH + "bg_Grass.png";
 backgrounds.clouds.src    = C.ASSET_PATH + "bg_Clouds.png";
 backgrounds.asteroids.src = C.ASSET_PATH + "bg_Asteroids.png";
-
-// ------------------ Música de Fondo ------------------
-const backgroundMusic = new Audio('./assets/sound/TV_GAME.ogg');
-backgroundMusic.loop = true;
-backgroundMusic.volume = 0.2;
-
-let isMusicPlaying = true;
-let musicIcon = null; 
-
-function toggleMusic() {
-  isMusicPlaying = !isMusicPlaying;
-  try {
-    if (isMusicPlaying) {
-      backgroundMusic.play();
-    } else {
-      backgroundMusic.pause();
-    }
-    localStorage.setItem('musicEnabled', isMusicPlaying ? '1' : '0');
-
-    if (musicIcon) {
-      musicIcon.src = isMusicPlaying ? 'assets/sprites/snd_on.png' : 'assets/sprites/snd_off.png';
-    }
-  } catch (e) {
-    console.error('Error toggling music', e);
-  }
-}
 
 // ------------------ Animaciones ------------------
 const frameData = {
@@ -106,11 +80,11 @@ class Game {
 
   loadAllAssets() {
     const images = [
-      // jugador
+      // Jugador
       sprites.idle, sprites.walk, sprites.jump, sprites.crouch,
-      // tilesets
+      // Tilesets
       tileSets.grass, tileSets.clouds, tileSets.asteroids,
-      // fondos
+      // Fondos
       backgrounds.grass, backgrounds.clouds, backgrounds.asteroids
     ];
     return new Promise((resolve) => {
@@ -162,13 +136,32 @@ class Game {
     const playerHeight = frameData.idle.h; // 24 px en tu config
     this.player = new Player(150, sueloY - playerHeight, sprites, frameData, hitboxAdjustments);
 
-    // Engine con handler de Game Over
+    // Efecto de sonido para caída (Game Over)
+    try {
+      this.deathSound = new Audio('assets/sound/fall_snd.wav');
+      this.deathSound.preload = 'auto';
+      this.deathSound.volume = 0.7;
+      this.deathSound.load();
+    } catch (e) {}
+
+    // Engine con handler de Game Over y handler onFallStart para reproducir SFX
     this.engine = new Engine(
       this.renderer,
       this.world,
       this.player,
       this.keyboard,
-      { gameOver: this.gameOver.bind(this) }
+      {
+        gameOver: this.gameOver.bind(this),
+        onFallStart: () => {
+          try {
+            const disabled = localStorage.getItem('musicEnabled') === '0';
+            if (!disabled && this.deathSound) {
+              this.deathSound.currentTime = 0;
+              this.deathSound.play().catch(() => {});
+            }
+          } catch (e) {}
+        }
+      }
     );
   }
 
@@ -203,6 +196,32 @@ class Game {
 
 const game = new Game(canvas);
 game.loadMenu();
+
+// ------------------ Música de Fondo ------------------
+const backgroundMusic = new Audio('./assets/sound/TV_GAME.ogg');
+backgroundMusic.loop = true;
+backgroundMusic.volume = 0.2;
+
+let isMusicPlaying = true;
+let musicIcon = null; 
+
+function toggleMusic() {
+  isMusicPlaying = !isMusicPlaying;
+  try {
+    if (isMusicPlaying) {
+      backgroundMusic.play();
+    } else {
+      backgroundMusic.pause();
+    }
+    localStorage.setItem('musicEnabled', isMusicPlaying ? '1' : '0');
+
+    if (musicIcon) {
+      musicIcon.src = isMusicPlaying ? 'assets/sprites/snd_on.png' : 'assets/sprites/snd_off.png';
+    }
+  } catch (e) {
+    console.error('Error toggling music', e);
+  }
+}
 
 // ------------------ Botón de Audio ------------------
 ;(function createMusicToggleButton(){
