@@ -13,8 +13,9 @@ export default class Engine {
     this.debug = false;
     this.score = 0;
 
-    // Suelo inicial (para game over)
-    this.sueloInicialY = this.world.initialChunk.length * C.TILE_SIZE;
+    // Estado de game over con transición
+    this._fallingToGameOver = false;
+    this._fallStartTime = null;
 
     this._loop = this._loop.bind(this);
   }
@@ -41,7 +42,7 @@ export default class Engine {
     // Actualizar jugador con tiles activos
     this.player.update(this.keyboard.keys, this.world);
 
-    // Actualizar mundo (chunks, fade de tiles)
+    // Actualizar mundo (chunks, fade de tiles, limpieza de tiles viejos)
     this.world.update(this.player);
 
     // Puntuación por altura
@@ -51,10 +52,19 @@ export default class Engine {
     if (this.world.stage === "asteroids") multiplier = 3;
     this.score = Math.max(this.score, base * multiplier);
 
-    // Game Over si cae por debajo del suelo inicial
-    if (this.player.y > this.sueloInicialY) {
-      if (this.handlers.gameOver) this.handlers.gameOver();
-      this.stop();
+    // 🔹 Game Over dinámico con transición
+    const gameOverLimit = this.world.getGameOverLimit();
+    if (this.player.y > gameOverLimit) {
+      if (!this._fallingToGameOver) {
+        this._fallingToGameOver = true;
+        this._fallStartTime = Date.now();
+      } else {
+        const elapsed = (Date.now() - this._fallStartTime) / 1000;
+        if (elapsed >= 2) { // 2 segundos de caída libre
+          if (this.handlers.gameOver) this.handlers.gameOver();
+          this.stop();
+        }
+      }
     }
   }
 
@@ -62,8 +72,11 @@ export default class Engine {
     const r = this.renderer;
     r.clear();
 
-    // Cámara centrada en el jugador
-    const cameraY = this.player.y - this.renderer.canvas.height / 2;
+    // 🔹 Cámara centrada en el jugador pero bloqueada en el límite de game over
+    const gameOverLimit = this.world.getGameOverLimit();
+    const desiredCameraY = this.player.y - this.renderer.canvas.height / 2;
+    const minCameraY = gameOverLimit - this.renderer.canvas.height / 2;
+    const cameraY = Math.min(desiredCameraY, minCameraY);
 
     this.world.draw(r, cameraY);
     this.player.draw(r, this.facing, this.debug, cameraY);

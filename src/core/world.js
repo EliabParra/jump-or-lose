@@ -26,7 +26,7 @@ export default class World {
     // Stage thresholds
     this.stageThresholds = { clouds: -800, asteroids: -1600 };
 
-    // Patrones de ejemplo
+   // Patrones de chunks para cada etapa
     this.chunkPatterns = {
       grass: [
         [[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -198,7 +198,7 @@ export default class World {
     }
 
     // Chunk generation: cap generations per frame to avoid spikes
-    const triggerDistance = TILE_SIZE * 20; // maintain 1–2 chunks above
+    const triggerDistance = TILE_SIZE * 20; // mantener 1–2 chunks arriba
     const maxGenerationsPerFrame = 2;
     let gens = 0;
 
@@ -209,7 +209,7 @@ export default class World {
       gens++;
     }
 
-    // Fade tiles (do not remove, only deactivate)
+    // Fade tiles (no se eliminan, solo se desactivan)
     const now = Date.now();
     for (const tile of this.tiles) {
       if (tile.fadeStart) {
@@ -222,7 +222,11 @@ export default class World {
       }
     }
 
-    // Build active tiles cache once per frame (used by Player)
+    // 🔹 Eliminar tiles muy abajo (2 chunks por debajo del jugador)
+    const bottomLimit = player.y + (this.chunkHeightRows * TILE_SIZE * 2);
+    this.tiles = this.tiles.filter(t => t.y < bottomLimit);
+
+    // Reset cache
     this._activeTilesCache = null;
   }
 
@@ -254,7 +258,6 @@ export default class World {
   }
 
   getActiveTiles() {
-    // Cache for this frame to avoid repeated filter calls during collision
     if (this._activeTilesCache) return this._activeTilesCache;
     this._activeTilesCache = this.tiles.filter(t => t.active);
     return this._activeTilesCache;
@@ -262,6 +265,13 @@ export default class World {
 
   getTiles() {
     return this.tiles;
+  }
+
+  // 🔹 Nuevo: límite dinámico de Game Over
+  getGameOverLimit() {
+    if (this.tiles.length === 0) return 0;
+    const lowestTile = Math.max(...this.tiles.map(t => t.y));
+    return lowestTile + TILE_SIZE;
   }
 
   draw(renderer, cameraY = 0) {
