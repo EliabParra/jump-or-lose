@@ -77,7 +77,7 @@ export default class Engine {
         } catch (e) {}
       } else {
         const elapsed = (Date.now() - this._fallStartTime) / 1000;
-        if (elapsed >= 2) { // 2 segundos de caída libre
+        if (elapsed >= 1) { // 1 segundos de caída libre
           if (this.handlers.gameOver) this.handlers.gameOver();
           this.stop();
         }
